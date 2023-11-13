@@ -12,7 +12,7 @@ import os
 
 os.environ["XLA_FLAGS"] = f"--xla_force_host_platform_device_count={CPU}"
 
-from src.JaxDecompiler import decompiler
+from JaxDecompiler import decompiler
 import time
 import jax
 import jax.numpy as jnp

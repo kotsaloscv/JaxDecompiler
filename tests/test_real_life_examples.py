@@ -1,7 +1,7 @@
 import unittest
 import jax
 from jax.numpy import *
-from src.JaxDecompiler import decompiler
+from JaxDecompiler import decompiler
 
 DELTA = 0.001
 
@@ -86,7 +86,7 @@ class MyTestCase(unittest.TestCase):
 
         #########
 
-        from src.JaxDecompiler import decompiler
+        from JaxDecompiler import decompiler
 
         decomp = decompiler.python_jaxpr_python(dloss, (W, X, Y))
         y_exp = dloss(W, X, Y)
@@ -117,7 +117,7 @@ class MyTestCase(unittest.TestCase):
 
         dloss = jax.grad(loss, argnums=(0,))
 
-        from src.JaxDecompiler import decompiler
+        from JaxDecompiler import decompiler
 
         decomp = decompiler.python_jaxpr_python(dloss, (params, X, Y))
 
@@ -161,7 +161,7 @@ class MyTestCase(unittest.TestCase):
         params2 = copy.deepcopy(params)
 
         dloss = jax.grad(loss, argnums=(0,))
-        from src.JaxDecompiler import decompiler
+        from JaxDecompiler import decompiler
 
         decomp = decompiler.python_jaxpr_python(
             dloss,
@@ -213,7 +213,7 @@ class MyTestCase(unittest.TestCase):
         W = array([[0.1, 0, 0], [0, 0.01, 0], [0, 0, 0], [0, 0, 0]], dtype=float)
         W = sparse.COO.fromdense(W, nse=3)
 
-        from src.JaxDecompiler import decompiler
+        from JaxDecompiler import decompiler
 
         decomp = decompiler.jaxpr2python(dloss, W, X, Y)
 

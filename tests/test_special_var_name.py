@@ -1,5 +1,5 @@
 import unittest
-from src.JaxDecompiler import decompiler
+from JaxDecompiler import decompiler
 
 
 class MyTestCase(unittest.TestCase):

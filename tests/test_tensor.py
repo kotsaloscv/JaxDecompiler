@@ -1,8 +1,8 @@
 import unittest
 import jax
 from jax.numpy import *
-from src.JaxDecompiler import decompiler
-from src.JaxDecompiler.primitive_mapping import reduce_sum
+from JaxDecompiler import decompiler
+from JaxDecompiler.primitive_mapping import reduce_sum
 
 DELTA = 0.001
 

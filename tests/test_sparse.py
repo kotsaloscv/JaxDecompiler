@@ -1,7 +1,7 @@
 import unittest
 import jax
 from jax.numpy import *
-from src.JaxDecompiler import decompiler
+from JaxDecompiler import decompiler
 from jax.experimental import sparse
 
 DELTA = 0.001

@@ -1,4 +1,4 @@
-from src.JaxDecompiler import decompiler
+from JaxDecompiler import decompiler
 from jax import *
 from jax.numpy import *
 import copy

@@ -95,7 +95,7 @@ def _filter_var_name(var_name):
 
 def _get_primitive_mapping() -> Dict[str, Callable]:
     # from JaxDecompiler import primitive_mapping # Prod phase
-    from src.JaxDecompiler import primitive_mapping  # Development phase
+    from JaxDecompiler import primitive_mapping  # Development phase
 
     K = {}
     for i in dir(primitive_mapping):
