@@ -75,9 +75,14 @@ def display_wrapped_jaxpr(python_f, x) -> None:
     """used in development phase to build the instruction table named 'primitive_mapping' """
     print("===== HEADER =======")
     print("invars:", jaxpr_code.invars)
+    print(80*'@')
+    print((jaxpr_code.invars[0].aval.shape, jaxpr_code.invars[0].aval.dtype))
+    print(80*'@')
     print("outvars:", jaxpr_code.outvars)
     print("constvars:", jaxpr_code.constvars)
-    # for eqn in jaxpr_code.eqns:
+    #for eqn in jaxpr_code.eqns:
+    #    for _ in eqn.outvars:
+    #        print(_.aval.dtype, _.aval.shape)
     #    print("equation:", eqn.invars, eqn.primitive, eqn.outvars, eqn.params)
     print("===== CODE =======")
     print(jaxpr_obj)
@@ -183,6 +188,7 @@ def _line_body(eqn, K, tab_level) -> List[Union[List, str]]:
     eqn.params["decompiler_K"] = K
     eqn.params["decompiler_tab"] = _tab
     eqn.params["decompiler_filter_var_name"] = _filter_var_name
+    eqn.params["outvars"] = eqn.outvars
 
     # process var names
     input_var = [_filter_var_name(str(var)) for var in eqn.invars]
@@ -203,10 +209,12 @@ def _line_body(eqn, K, tab_level) -> List[Union[List, str]]:
 
 
 def _import_statements(tabbed_python_lines) -> None:
-    tabbed_python_lines.append("import jax")
-    tabbed_python_lines.append("from jax.numpy import *")
-    tabbed_python_lines.append("from jax.experimental import sparse")
-    tabbed_python_lines.append("from jax._src import prng")
+    #tabbed_python_lines.append("import jax")
+    #tabbed_python_lines.append("from jax.numpy import *")
+    #tabbed_python_lines.append("from jax.experimental import sparse")
+    #tabbed_python_lines.append("from jax._src import prng")
+    tabbed_python_lines.append("import numpy as np")
+    tabbed_python_lines.append("import dace")
 
 
 def decompiler(

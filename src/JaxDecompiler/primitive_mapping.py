@@ -122,50 +122,50 @@ def div(input_var, output_var, params):
 
 def rem(input_var, output_var, params):
     rvalue = ", ".join(input_var)
-    return f"{output_var[0]} = jax.lax.rem({rvalue})"
+    return f"{output_var[0]} = np.remainder({rvalue})"
 
 
 def floor(input_var, output_var, params):
-    return f"{output_var[0]} = floor({input_var[0]})"
+    return f"{output_var[0]} = np.floor({input_var[0]})"
 
 
 def ceil(input_var, output_var, params):
-    return f"{output_var[0]} = ceil({input_var[0]})"
+    return f"{output_var[0]} = np.ceil({input_var[0]})"
 
 
 def round(input_var, output_var, params):
-    return f"{output_var[0]} = round({input_var[0]})"
+    return f"{output_var[0]} = np.round({input_var[0]})"
 
 
 def clamp(input_var, output_var, params):
     v = input_var[1]
     minv = input_var[0]
     maxv = input_var[2]
-    return f"{output_var[0]} = clip({v}, {minv}, {maxv})"
+    return f"{output_var[0]} = np.clip({v}, {minv}, {maxv})"
 
 
 def integer_pow(input_var, output_var, params):
-    return f"{output_var[0]} = {input_var[0]} ** {params['y']}"
+    return f"{output_var[0]} = np.power({input_var[0]}, {params['y']})"
 
 
 def pow(input_var, output_var, params):
-    return f"{output_var[0]} = {input_var[0]} ** {input_var[1]}"
+    return f"{output_var[0]} = np.power({input_var[0]}, {input_var[1]})"
 
 
 def sqrt(input_var, output_var, params):
-    return f"{output_var[0]} = sqrt({input_var[0]})"
+    return f"{output_var[0]} = np.sqrt({input_var[0]})"
 
 
 def log(input_var, output_var, params):
     rvalue = input_var[0]
     lvalue = output_var[0]
-    return f"{lvalue} = log({rvalue})"
+    return f"{lvalue} = np.log({rvalue})"
 
 
 def exp(input_var, output_var, params):
     rvalue = input_var[0]
     lvalue = output_var[0]
-    return f"{lvalue} = exp({rvalue})"
+    return f"{lvalue} = np.exp({rvalue})"
 
 
 def dot_general(input_var, output_var, params):
@@ -175,57 +175,61 @@ def dot_general(input_var, output_var, params):
     contraction_dims = dim_num[0]
     batch_dims = dim_num[1]  # TODO: not implemented yet
 
+    #for _ in params['outvars']:
+    #    print(_.aval.dtype, _.aval.shape)
+
     if contraction_dims == ((), ()):
-        return f"{lvalue} = outer({rvalue})"
+        return f"{lvalue}: dace.{params['preferred_element_type']}[{params['outvars'][0].aval.shape[0]}, {params['outvars'][0].aval.shape[1]}] = np.outer({rvalue})"
     elif contraction_dims == ((0,), (0,)):
-        return f"{lvalue} = dot({rvalue})"
+        return f"{lvalue} = {input_var[0]} @ {input_var[1]}"
     else:
-        return f"{lvalue} = tensordot({rvalue},axes={contraction_dims})"
+        return f"{lvalue} = np.tensordot({rvalue},axes={contraction_dims})"
 
 
 def cos(input_var, output_var, params):
-    return f"{output_var[0]} = cos({input_var[0]})"
+    return f"{output_var[0]} = np.cos({input_var[0]})"
 
 
 def sin(input_var, output_var, params):
-    return f"{output_var[0]} = sin({input_var[0]})"
+    return f"{output_var[0]} = np.sin({input_var[0]})"
 
 
 def tan(input_var, output_var, params):
-    return f"{output_var[0]} = tan({input_var[0]})"
+    return f"{output_var[0]} = np.tan({input_var[0]})"
 
 
 def tanh(input_var, output_var, params):
-    return f"{output_var[0]} = tanh({input_var[0]})"
+    return f"{output_var[0]} = np.tanh({input_var[0]})"
 
 
 def acos(input_var, output_var, params):
-    return f"{output_var[0]} = arccos({input_var[0]})"
+    return f"{output_var[0]} = np.arccos({input_var[0]})"
 
 
 def asin(input_var, output_var, params):
-    return f"{output_var[0]} = arcsin({input_var[0]})"
+    return f"{output_var[0]} = np.arcsin({input_var[0]})"
 
 
 def atan(input_var, output_var, params):
-    return f"{output_var[0]} = arctan({input_var[0]})"
+    return f"{output_var[0]} = np.arctan({input_var[0]})"
 
 
 def copy(input_var, output_var, params):
-    return f"{output_var[0]} = jax.numpy.copy({input_var[0]})"
+    return f"{output_var[0]} = np.copy({input_var[0]})"
 
 
 def convert_element_type(input_var, output_var, params):
     t = params["new_dtype"]
-    return f"{output_var[0]} = array({input_var[0]}).astype({t})"
+    return f"{output_var[0]} = np.array({input_var[0]}, dtype=np.{t})"
 
 
 def reshape(input_var, output_var, params):
     new_sizes = params["new_sizes"]
-    return f"{output_var[0]} = array({input_var[0]}).reshape({new_sizes})"
+    return f"{output_var[0]} = np.array({input_var[0]}).reshape({new_sizes})"
 
 
 def gather(input_var, output_var, params):
+    raise NotImplementedError(f"TODO")
     arr = input_var[0]
 
     start_indices = input_var[1]  # ex: [0,0]
@@ -236,6 +240,7 @@ def gather(input_var, output_var, params):
 
 
 def random_seed(input_var, output_var, params):
+    raise NotImplementedError(f"TODO")
     # return f"{output_var[0]} = random.seed({input_var[0]})"
     impl_obj = params["impl"]
     PRNG_IMPLS = {
@@ -249,11 +254,13 @@ def random_seed(input_var, output_var, params):
 
 
 def random_unwrap(input_var, output_var, params):
+    raise NotImplementedError(f"TODO")
     # return f"{output_var[0]} = {input_var[0]}.unwrap()"
     return f"{output_var[0]} = prng.random_unwrap({input_var[0]})"
 
 
 def random_wrap(input_var, output_var, params):
+    raise NotImplementedError(f"TODO")
     impl_obj = params["impl"]
     PRNG_IMPLS = {
         "threefry2x32": "prng.threefry_prng_impl",
@@ -267,65 +274,67 @@ def random_wrap(input_var, output_var, params):
 
 
 def random_bits(input_var, output_var, params):
+    raise NotImplementedError(f"TODO")
     options = f"bit_width={params['bit_width']}, shape={params['shape']}"
     return f"{output_var[0]} = prng.random_bits({input_var[0]}, {options})"
 
 
 def shift_right_logical(input_var, output_var, params):
-    return f"{output_var[0]} = right_shift({input_var[0]}, {input_var[1]})"
+    return f"{output_var[0]} = np.right_shift({input_var[0]}, {input_var[1]})"
 
 
 def shift_left_logical(input_var, output_var, params):
-    return f"{output_var[0]} = left_shift({input_var[0]}, {input_var[1]})"
+    return f"{output_var[0]} = np.left_shift({input_var[0]}, {input_var[1]})"
 
 
 def concatenate(input_var, output_var, params):
     dim = params["dimension"]
     rvalue = ", ".join(input_var)
-    return f"{output_var[0]} = concatenate(({rvalue}), axis={dim})"
+    return f"{output_var[0]} = np.concatenate(({rvalue}), axis={dim})"
 
 
 def squeeze(input_var, output_var, params):
+    raise NotImplementedError(f"TODO")
     return f"{output_var[0]} = squeeze(array({input_var[0]}))"
 
 
 def argmin(input_var, output_var, params):
-    return f"{output_var[0]} = argmin({input_var[0]})"
+    return f"{output_var[0]} = np.argmin({input_var[0]})"
 
 
 def argmax(input_var, output_var, params):
-    return f"{output_var[0]} = argmax({input_var[0]})"
+    return f"{output_var[0]} = np.argmax({input_var[0]})"
 
 
 def min(input_var, output_var, params):
-    return f"{output_var[0]} = array([min({input_var[0]})])"
+    return f"{output_var[0]} = np.array([np.min({input_var[0]})])"
 
 
 def reduce_min(input_var, output_var, params):
-    return f"{output_var[0]} = min({input_var[0]})"
+    return f"{output_var[0]} = np.min({input_var[0]})"
 
 
 def max(input_var, output_var, params):
-    return f"{output_var[0]} = array([max({input_var[0]})])"
+    return f"{output_var[0]} = np.array([np.max({input_var[0]})])"
 
 
 def reduce_max(input_var, output_var, params):
-    return f"{output_var[0]} = max({input_var[0]})"
+    return f"{output_var[0]} = np.max({input_var[0]})"
 
 
 def abs(input_var, output_var, params):
-    return f"{output_var[0]} = abs({input_var[0]})"
+    return f"{output_var[0]} = np.abs({input_var[0]})"
 
 
 def sign(input_var, output_var, params):
-    return f"{output_var[0]} = sign({input_var[0]})"
+    return f"{output_var[0]} = np.sign({input_var[0]})"
 
 
 def reduce_sum(input_var, output_var, params):
     if "axes" in params:
-        return f"{output_var[0]} = sum({input_var[0]},axis={params['axes']})"
+        return f"{output_var[0]} = np.sum({input_var[0]},axis={params['axes']})"
     else:
-        return f"{output_var[0]} = sum({input_var[0]})"
+        return f"{output_var[0]} = np.sum({input_var[0]})"
 
 
 def broadcast_in_dim(input_var, output_var, params):
@@ -334,16 +343,17 @@ def broadcast_in_dim(input_var, output_var, params):
     tmp_var = "tmp_broadcast"
 
     lines = []
+    #lines.append(
+    #    f"{tmp_var} = np.array({rvalue}) if isinstance({rvalue}, np.ndarray) or np.isscalar({rvalue}) else -1"
+    #)
     lines.append(
-        f"{tmp_var} = array({rvalue}) if isinstance({rvalue}, ndarray) or isscalar({rvalue}) else -1"
-    )
-    lines.append(
-        f"{output_var[0]} = array(jax.numpy.broadcast_to({tmp_var}, {shape}))"
+        f"{output_var[0]}: dace.{params['outvars'][0].aval.dtype}[{params['outvars'][0].aval.shape[0]},] = np.broadcast_to({rvalue}, {shape})"
     )
     return lines
 
 
 def select_n(input_var, output_var, params):
+    raise NotImplementedError(f"TODO")
     # jaxpr: (pred, on_false, on_true) nump: (condlist, choicelist, default)
     pred = input_var[0]
     on_false = input_var[1]
@@ -388,20 +398,21 @@ def lt(input_var, output_var, params):
 def sort(input_var, output_var, params):
     rvalue = ", ".join(input_var)
     axis = params["dimension"]
-    return f"{output_var[0]} = sort({rvalue},axis={axis})"
+    return f"{output_var[0]} = np.sort({rvalue},axis={axis})"
 
 
 def reduce_or(input_var, output_var, params):
     rvalue = ", ".join(input_var)
-    return f"{output_var[0]} = any({rvalue})"
+    return f"{output_var[0]} = np.any({rvalue})"
 
 
 def reduce_and(input_var, output_var, params):
     rvalue = ", ".join(input_var)
-    return f"{output_var[0]} = all({rvalue})"
+    return f"{output_var[0]} = np.all({rvalue})"
 
 
 def xla_pmap(input_var, output_var, params) -> List[Union[List, str]]:
+    raise NotImplementedError(f"TODO")
     global _LOCAL_F_COUNT
     local_f_name = "local_f" + str(_LOCAL_F_COUNT)
     _LOCAL_F_COUNT += 1
@@ -415,6 +426,7 @@ def xla_pmap(input_var, output_var, params) -> List[Union[List, str]]:
 
 
 def xla_call(input_var, output_var, params) -> List[Union[List, str]]:
+    raise NotImplementedError(f"TODO")
     global _LOCAL_F_COUNT
     local_f_name = "local_f" + str(_LOCAL_F_COUNT)
     _LOCAL_F_COUNT += 1
@@ -429,15 +441,16 @@ def xla_call(input_var, output_var, params) -> List[Union[List, str]]:
 
 def rev(input_var, output_var, params):
     axis = params["dimensions"]
-    return f"{output_var[0]} = flip({input_var[0]},axis={axis})"
+    return f"{output_var[0]} = np.flip({input_var[0]},axis={axis})"
 
 
 def conv_general_dilated(input_var, output_var, params):
     shape = params["lhs_shape"]
-    return f"{output_var[0]} = convolve(squeeze({input_var[0]}), squeeze({input_var[1]}), mode='same').reshape({shape})"
+    return f"{output_var[0]} = np.convolve(np.squeeze({input_var[0]}), np.squeeze({input_var[1]}), mode='same').reshape({shape})"
 
 
 def dynamic_slice(input_var, output_var, params):  # TODO: unit test
+    raise NotImplementedError(f"TODO")
     a, b = input_var
     ss = params["slice_sizes"]
     # return f"{output_var[0]} = {a}[{b}:{b}+{ss}[0]] # dynamic slice"
@@ -445,6 +458,7 @@ def dynamic_slice(input_var, output_var, params):  # TODO: unit test
 
 
 def slice(input_var, output_var, params):  # TODO: unit test
+    raise NotImplementedError(f"TODO")
     start = params["start_indices"]  # e.g. "(1, 2)", "(0, )", "a"
     limit = params["limit_indices"]
     strides = params["strides"]
@@ -493,12 +507,14 @@ def slice(input_var, output_var, params):  # TODO: unit test
 
 
 def dynamic_update_slice(input_var, output_var, params):  # TODO: unit test
+    raise NotImplementedError(f"TODO")
     a, b, c = input_var
     # return f"{output_var[0]} = concatenate([ {b}[{c}:] , {a}]) # dynamic update slice"
     return f"{output_var[0]} = jax.lax.dynamic_update_slice({a}, {b}, ({c},))"
 
 
 def scatter_add(input_var, output_var, params):  # TODO: unit test
+    raise NotImplementedError(f"TODO")
     a, b, c = input_var
     return f"{output_var[0]} = add.ad({a}, {b}, {c})"
 
@@ -514,11 +530,13 @@ def and__(input_var, output_var, params):
 
 
 def bitcast_convert_type(input_var, output_var, params):
+    raise NotImplementedError(f"TODO")
     dt = params["new_dtype"]
     return f"{output_var[0]} = jax.lax.bitcast_convert_type({input_var[0]}, new_dtype={dt})"
 
 
 def erf_inv(input_var, output_var, params):
+    raise NotImplementedError(f"TODO")
     return f"{output_var[0]} = jax.lax.erf_inv({input_var[0]})"
 
 
@@ -528,10 +546,11 @@ def stop_gradient(input_var, output_var, params):
 
 def transpose(input_var, output_var, params):
     perm = params["permutation"]
-    return f"{output_var[0]} = transpose({input_var[0]}, axes={perm})"
+    return f"{output_var[0]} = np.transpose({input_var[0]}, axes={perm})"
 
 
 def iota(input_var, output_var, params):
+    raise NotImplementedError(f"TODO")
     d = params["dimension"]
     t = params["dtype"]
     s = params["shape"]
@@ -539,6 +558,7 @@ def iota(input_var, output_var, params):
 
 
 def coo_fromdense(input_var, output_var, params):
+    raise NotImplementedError(f"TODO")
     nse = params["nse"]
     index_dtype = params["index_dtype"]
     lvalue = ", ".join(output_var)
@@ -558,6 +578,7 @@ def coo_matvec(input_var, output_var, params):
 
 
 def scan(input_var, output_ver, params):
+    raise NotImplementedError(f"TODO")
     rvalue = " ,".join(input_var)
     lvalue = " ,".join(output_ver)
     reverse = params["reverse"]

@@ -3,6 +3,9 @@ import jax
 from jax.numpy import *
 from JaxDecompiler import decompiler
 
+import dace
+import numpy as np
+
 DELTA = 0.001
 
 
@@ -27,6 +30,17 @@ class MyTestCase(unittest.TestCase):
         decomp, pycode = decompiler.python_jaxpr_python(df, x, is_python_returned=True)
 
         y = decomp(*x)
+        
+        ra = np.ones(3)
+        rb = 2 * ra
+        x = (ra, rb, 0.5, 20.0)
+
+        dace_func = dace.program(decomp)
+        m_sdfg = dace_func.to_sdfg(*x).view()
+        y_dace = dace_func(*x)
+
+        gap = sum(array(y_expected[0]) - array(y_dace[0]))
+        self.assertAlmostEqual(0.0, gap, delta=DELTA)       
 
         gap = sum(array(y_expected[0]) - array(y[0]))
         self.assertAlmostEqual(0.0, gap, delta=DELTA)
@@ -89,8 +103,18 @@ class MyTestCase(unittest.TestCase):
         from JaxDecompiler import decompiler
 
         decomp = decompiler.python_jaxpr_python(dloss, (W, X, Y))
+        decompiler.display_wrapped_jaxpr(dloss, (W, X, Y))
         y_exp = dloss(W, X, Y)
         y = decomp(W, X, Y)
+
+        X = np.array(X)
+        Y = np.array(Y)
+        W = np.array(W)
+
+        dace_func = dace.program(decomp)
+        m_sdfg = dace_func.to_sdfg(W, X, Y).view()
+        y_dace = dace_func(W, X, Y)
+        print(y_dace)
 
         gap = sum(array(y_exp) - array(y))
 
